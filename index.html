@@ -40,49 +40,7 @@ window.raciGetLocalData=()=>data;
 window.raciSetLocalData=next=>{data=next||{};localStorage.setItem(STORE,JSON.stringify(data));renderCalendar();renderSummary()};
 function options(){for(let id of ['start','end']){let el=$(id);el.innerHTML='';for(let h=0;h<24;h++)for(let m of [0,30]){let v=h*60+m,label=`${h%12||12}:${String(m).padStart(2,'0')} ${h<12?'AM':'PM'}`,o=document.createElement('option');o.value=v;o.textContent=label;el.append(o)}}$('start').value='480';$('end').value='1020'}
 function renderCalendar(){let y=view.getFullYear(),m=view.getMonth(),first=new Date(y,m,1),offset=(first.getDay()+6)%7,count=new Date(y,m+1,0).getDate();$('monthLabel').textContent=months[m]+' '+y;$('calendar').innerHTML='';for(let i=0;i<offset;i++){let b=document.createElement('div');b.className='day blank';$('calendar').append(b)}for(let d=1;d<=count;d++){let dt=new Date(y,m,d),k=keyDate(dt),b=document.createElement('button');b.type='button';b.className='day'+(selected.has(k)?' selected':'')+(data[k]?' saved':'');b.innerHTML=`${d}${data[k]?`<small>${duration(data[k]).toFixed(1)} orë</small>`:''}`;b.addEventListener('click',()=>{if(selected.has(k))selected.delete(k);else selected.add(k);renderCalendar();renderDetails()});$('calendar').append(b)}renderDetails();$('scheduleTitle').textContent=`Orari për ${selected.size} ditë të zgjedhura`}
-
-function renderDetails(){
-  let keys=[...selected].sort();
-
-  $('scheduleTitle').textContent=`Orari për ${keys.length} ditë të zgjedhura`;
-
-  if(!keys.length){
-    $('dayDetail').textContent='Prek një datë në kalendar për të parë orarin e asaj dite.';
-    return;
-  }
-
-  let existing=keys.filter(k=>data[k]);
-
-  const formatTime=minutes=>{
-    let h=Math.floor(Number(minutes)/60);
-    let m=Number(minutes)%60;
-    return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');
-  };
-
-  let totalHours=0;
-  let totalPay=0;
-
-  let html=`<strong>Detajet e ditëve të zgjedhura:</strong>`;
-
-  keys.forEach(k=>{
-    let date=parseKey(k).toLocaleDateString('sq-AL',{
-      day:'numeric',month:'long',year:'numeric'
-    });
-
-    if(!data[k]){
-      html+=`<div class="day-detail">
-        <strong>${date}</strong><br>
-        <span class="muted">Nuk ka orar të ruajtur.</span>
-      </div>`;
-      return;
-    }
-
-    let r=data[k];
-    let hours=duration(r);
-    let pay=hours*rate();
-
-    totalHours+=hours;
-    totalPay+=pay;
+function renderDetails(){let keys=[...selected].sort();$('scheduleTitle').textContent=`Orari për ${keys.length} ditë të zgjedhura`;if(!keys.length){$('dayDetail').textContent='Prek një datë në kalendar për të parë orarin e asaj dite.';return;}let existing=keys.filter(k=>data[k]);const formatTime=minutes=>{let h=Math.floor(Number(minutes)/60);let m=Number(minutes)%60;return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');};let totalHours=0;let totalPay=0;let html=`<strong>Detajet e ditëve të zgjedhura:</strong>`;keys.forEach(k=>{let date=parseKey(k).toLocaleDateString('sq-AL',{day:'numeric',month:'long',year:'numeric'});if(!data[k]){html+=`<div class="day-detail"><strong>${date}</strong><br><span class="muted">Nuk ka orar të ruajtur.</span></div>`;return;}let r=data[k];let hours=duration(r);let pay=hours*rate();totalHours+=hours;totalPay+=pay;
 
     html+=`<div class="day-detail" style="padding:10px;margin:8px 0;border:1px solid #888;border-radius:8px">
       <strong>${date}</strong><br>
